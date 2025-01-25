@@ -1,0 +1,57 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Post {
+  id           Int            @id @default(autoincrement())
+  title        String
+  content      String
+  published    Boolean?       @default(false) // Make `published` optional
+  authorId     Int
+  author       User           @relation(fields: [authorId], references: [id])
+  created_at   DateTime       @default(now())
+  updated_at   DateTime       @updatedAt
+  postCategory PostCategory[]
+}
+
+model User {
+  id      Int      @id @default(autoincrement())
+  name    String
+  email   String   @unique
+  age Int @default(0)
+  profile Profile?
+  post    Post[]
+}
+
+model Profile {
+  id     Int     @id @default(autoincrement())
+  bio    String?
+  userId Int     @unique
+  user   User    @relation(fields: [userId], references: [id])
+}
+
+model Category {
+  id           Int            @id @default(autoincrement())
+  name         String
+  PostCategory PostCategory[]
+}
+
+model PostCategory {
+  post_id     Int
+  post        Post     @relation(fields: [post_id], references: [id])
+  category_id Int
+  category    Category @relation(fields: [category_id], references: [id])
+
+  @@id([post_id, category_id])
+}
